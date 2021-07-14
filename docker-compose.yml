@@ -1,0 +1,7 @@
+services:
+    server:
+        image: stzups/server
+        build:
+            context: server
+        ports:
+            - 25565:25565
