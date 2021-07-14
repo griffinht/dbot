@@ -7,9 +7,14 @@ const data = require('minecraft-data')('1.16.5');
 
 const botOptions: BotOptions = {
     host: 'localhost',
-    username: 'player',
-    checkTimeoutInterval: 1000 * 60 * 5
+    username: 'playerrr',
+    checkTimeoutInterval: 1000 * 60 * 5,
 }
+
+const ops = [
+    'Lem0nPickles',
+];
+
 
 
 const bot = mineflayer.createBot(botOptions);
@@ -36,14 +41,27 @@ bot.on('spawn', async () => {
         throw new Error('bad pos ' + pos);
     }*/
 
-    bot.on('whisper', async () => {
-
-    })
-    /*await bot.sleep(bot.blockAt(bed), (e: Error | undefined) => {
-        console.log(e);
-    });*/
-
-    bot.chat('ready');
+    bot.on('whisper', async (username: string, message: string) => {
+        if (ops.includes(username)) {
+            try {
+                switch (message) {
+                    case "mine":
+                        bot.whisper(username, 'mining');
+                        break;
+                    case "sleepwake":
+                        await sleepWake(bot, bed);
+                        bot.whisper(username, 'slept');
+                        break;
+                    default:
+                        throw new Error("Unknown command " + message);
+                }
+            } catch (e) {
+                if (e instanceof Error) {
+                    bot.whisper(username, e.message);
+                }
+            }
+        }
+    });
 });
 
 async function sleepWake(bot: Bot, bed: Vec3) {
