@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "outDir": "./build",
+      //"sourceMap": true,
+      "inlineSourceMap": true,
+      "inlineSources": true,
+      "allowJs": false,
+      "target": "ES2021",
+      "module": "ES2020",
+      "strict": true,
+      "noImplicitReturns": true,
+      "moduleResolution": "node"
+    },
+    "include": ["./src/**/*"],
+  }

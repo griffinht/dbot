@@ -1,0 +1,20 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "run": "node build"
+  },
+  "author": "stzups",
+  "license": "",
+  "type": "module",
+  "dependencies": {
+    "mineflayer": "^3.7.0",
+    "typescript": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^16.3.2"
+  }
+}
