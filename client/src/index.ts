@@ -1,9 +1,10 @@
 import {Vec3} from "vec3"
 import {Bot, BotOptions} from "mineflayer"
+import {Block} from "prismarine-block";
 
 const mineflayer = require('mineflayer')
 const v = require('vec3')
-const data = require('minecraft-data')('1.16.5')
+//const data = require('minecraft-data')('1.16.5')
 
 const botOptions: BotOptions = {
     host: 'localhost',
@@ -47,6 +48,7 @@ bot.on('spawn', async () => {
                 switch (message) {
                     case "mine":
                         bot.whisper(username, 'mining')
+                        mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(189, 14, -225), new Vec3(1, 0, 0));
                         break
                     case "sleepwake":
                         await sleepWake(bot, bed)
@@ -65,26 +67,55 @@ bot.on('spawn', async () => {
 })
 
 async function sleepWake(bot: Bot, bed: Vec3) {
-    let error = (message: String) => {
-        return new Error('Error while sleepWake at ' + bed + ': ' + message)
-    }
+    try {
+        let block = getBlock(bot, bed);
 
-    let block = bot.blockAt(bed)
+        await bot.activateBlock(block)
+        await bot.waitForTicks(2)
+        if (!bot.isSleeping) {
+            throw new Error('Can\'t sleep. There must be an existing unoccupied bed within reach at night or during thunder not nearby monsters')
+        }
+
+        await bot.wake()
+        await bot.waitForTicks(1)
+        if (bot.isSleeping) {
+            throw new Error('Can\'t wake up.')
+        }
+    } catch (e) {
+        if (e instanceof Error) {
+            throw new Error('Error while sleepWake at ' + bed + ': ' + e.message)
+        } else {
+            throw e;
+        }
+    }
+}
+
+async function mine(bot: Bot, input: Vec3, output: Vec3, start: Vec3, add: Vec3) {
+    let top = true;
+    let up = new Vec3(0, 1, 0);
+    let down = new Vec3(0, -1, 0);
+    while (true) {
+        await bot.dig(getBlock(bot, start), true);
+        start.add(top ? down : up);
+        if (!top) {
+            start.add(add);
+            bot.setControlState('forward', true);
+            bot.waitForTicks(5)
+                .then(() => {
+                    bot.setControlState('forward', false);
+                })
+        }
+        top = !top;
+    }
+}
+
+function getBlock(bot: Bot, vec3: Vec3): Block {
+    let block = bot.blockAt(vec3);
     if (block === null) {
-        throw error('Block not loaded')
+        throw new Error('Block at ' + vec3 + ' not loaded');
     }
 
-    await bot.activateBlock(block)
-    await bot.waitForTicks(2)
-    if (!bot.isSleeping) {
-        throw error('Can\'t sleep. There must be an existing unoccupied bed within reach at night or during thunder not nearby monsters')
-    }
-
-    await bot.wake()
-    await bot.waitForTicks(1)
-    if (bot.isSleeping) {
-        throw error('Can\'t wake up.')
-    }
+    return block;
 }
 
 let spawn: Vec3 = new Vec3(188, 79, -225)
