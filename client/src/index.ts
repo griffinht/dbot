@@ -22,8 +22,8 @@ const bot = mineflayer.createBot(botOptions)
 
 bot.on('error', console.log)
 
-bot.on('kicked', () => {
-    bot.connect(botOptions)
+bot.on('kicked', (reason: String) => {
+    console.log('kicked ' + reason);
 })
 
 bot.on('entityHurt', () => {
@@ -48,7 +48,7 @@ bot.on('spawn', async () => {
                 switch (message) {
                     case "mine":
                         bot.whisper(username, 'mining')
-                        mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(189, 14, -225), new Vec3(1, 0, 0));
+                        mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 0, 0));
                         break
                     case "sleepwake":
                         await sleepWake(bot, bed)
@@ -90,22 +90,19 @@ async function sleepWake(bot: Bot, bed: Vec3) {
     }
 }
 
-async function mine(bot: Bot, input: Vec3, output: Vec3, start: Vec3, add: Vec3) {
-    let top = true;
+async function mine(bot: Bot, input: Vec3, output: Vec3, add: Vec3) {
+    let bottom = true;
     let up = new Vec3(0, 1, 0);
-    let down = new Vec3(0, -1, 0);
+    bot.lookAt(bot.entity.position.clone().add(add));
+    bot.setControlState('forward', true);
     while (true) {
-        await bot.dig(getBlock(bot, start), true);
-        start.add(top ? down : up);
-        if (!top) {
-            start.add(add);
-            bot.setControlState('forward', true);
-            bot.waitForTicks(5)
-                .then(() => {
-                    bot.setControlState('forward', false);
-                })
+        let pos = bot.entity.position.clone().add(add);
+        if (!bottom) {
+            pos.add(up);
         }
-        top = !top;
+        await bot.dig(getBlock(bot, pos), false);
+        await bot.waitForTicks(2);
+        bottom = !bottom;
     }
 }
 
