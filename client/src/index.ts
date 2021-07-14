@@ -30,34 +30,36 @@ bot.on('death', () => {
 
 bot.on('spawn', async () => {
     bot.chat('hello');
-    await bot.waitForTicks(20)
+/*    await bot.waitForTicks(20)
     let pos = bot.entity.position.floor();
     if (!pos.equals(spawn)) {
-        bot.chat('bad pos ' + pos);
-        return;
-    }
+        throw new Error('bad pos ' + pos);
+    }*/
 
-    bot.chat('good pos');
+    bot.on('whisper', async () => {
 
-    await sleepWake(bot, bed);
+    })
+    /*await bot.sleep(bot.blockAt(bed), (e: Error | undefined) => {
+        console.log(e);
+    });*/
 
     bot.chat('ready');
 });
 
-async function sleepWake(bot: Bot, vec3: Vec3) {
-    let error = (message: String) =>  {
-        return new Error('Error while sleepWake at ' + vec3 + ': ' + message);
+async function sleepWake(bot: Bot, bed: Vec3) {
+    let error = (message: String) => {
+        return new Error('Error while sleepWake at ' + bed + ': ' + message);
     }
 
-    let block = bot.blockAt(vec3);
+    let block = bot.blockAt(bed);
     if (block === null) {
         throw error('Block not loaded');
     }
 
     await bot.activateBlock(block);
-    await bot.waitForTicks(1);
+    await bot.waitForTicks(2);
     if (!bot.isSleeping) {
-        throw error('Can\'t sleep. There must be an existing unoccupied bed at night or during thunder not nearby monsters');
+        throw error('Can\'t sleep. There must be an existing unoccupied bed within reach at night or during thunder not nearby monsters');
     }
 
     await bot.wake();
