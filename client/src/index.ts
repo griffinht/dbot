@@ -180,7 +180,7 @@ async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
     const DISTANCE = 3
     start.subtract(new Vec3(0, 0, DISTANCE))
     for (let i = 0; i < length; i++) {
-        await moveTo(bot, start, 2, .2)
+        await moveTo(bot, start, 1, .1)
         let pos = start.clone()
             .subtract(new Vec3(-4, 0, 0))
             .add(new Vec3(0, 0, DISTANCE))
