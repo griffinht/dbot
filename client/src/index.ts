@@ -202,24 +202,17 @@ async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
 }
 
 function moveTo(bot: Bot, target: Vec3): Promise<void> {
-    console.log('moveto')
-    console.log(target)
     let realTarget = target.clone().add(new Vec3(0.5, 1.5, 0.5))
-    console.log(realTarget)
     return new Promise(async (resolve, reject) => {
         await bot.lookAt(realTarget)
         await bot.setControlState('forward', true)
         async function move() {
-            console.log('move')
             await bot.lookAt(realTarget, true)
             if (bot.entity.position.xzDistanceTo(realTarget) < .2) {
                 await bot.setControlState('forward', false)
-                console.log('resolve')
                 //unregister event handler - important!
                 bot.off('move', move)
                 resolve()
-            } else {
-                console.log('a')
             }
         }
 
