@@ -237,6 +237,7 @@ bot.on('move', async () => {
             if (distance < move.close
                 || distance > move.far) {
                 await bot.setControlState('forward', false)
+                move = null
             }
         }
     }
