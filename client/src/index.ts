@@ -1,7 +1,6 @@
 import {Vec3} from 'vec3'
 import {Bot, BotOptions} from 'mineflayer'
 import {Block} from 'prismarine-block';
-import {createDeflateRaw} from "zlib";
 
 const environment: Environment = require('./bin/environment')
 const mineflayer = require('mineflayer')
@@ -78,7 +77,7 @@ bot.on('spawn', async () => {
                         break
                     case 'plant':
                         bot.whisper(username, 'planting')
-                        plant(bot, new Vec3(-129, 71, -174), new Vec3(0, 0, 1), 31)
+                        plant(bot, new Vec3(-130, 71, -175), new Vec3(0, 0, 1), 31)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -178,29 +177,52 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
 }
 
 async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
-    await moveTo(bot, start)
-    //while (true) {
-    let pos = start.clone().subtract(new Vec3(-4, 0, 0))
-    for (let i = 0; i < 8; i++) {
-        console.log(pos)
-        await bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
-        pos.add(new Vec3(-1, 0, 0))
+    for (let i = 0; i < length; i++) {
+        console.log('move')
+        await moveTo(bot, start)
+        console.log('moved')
+        let pos = start.clone()
+            .subtract(new Vec3(-4, 0, 0))
+            .add(new Vec3(0, 0, 1))
+        for (let i = 0; i < 9; i++) {
+            console.log(pos)
+            try {
+                await bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
+            } catch (e) {
+                if (e instanceof Error && e.message.startsWith('No block has been placed')) {
+                    console.log(e.message)
+                } else {
+                    throw e
+                }
+            }
+            pos.add(new Vec3(-1, 0, 0))
+        }
+        start.add(add)
     }
-    start.add(add)
-    //}
 }
 
 function moveTo(bot: Bot, target: Vec3): Promise<void> {
-    let realTarget = target.clone().add(new Vec3(0.5, 0.5, 0.5))
+    console.log('moveto')
+    console.log(target)
+    let realTarget = target.clone().add(new Vec3(0.5, 1.5, 0.5))
+    console.log(realTarget)
     return new Promise(async (resolve, reject) => {
         await bot.lookAt(realTarget)
         await bot.setControlState('forward', true)
-        bot.on('move', async () => {
-            await bot.lookAt(realTarget)
-            if (bot.entity.position.clone().floor().equals(target)) {
+        async function move() {
+            console.log('move')
+            await bot.lookAt(realTarget, true)
+            if (bot.entity.position.xzDistanceTo(realTarget) < .2) {
                 await bot.setControlState('forward', false)
+                console.log('resolve')
+                //unregister event handler - important!
+                bot.off('move', move)
                 resolve()
+            } else {
+                console.log('a')
             }
-        })
+        }
+
+        bot.on('move', move)
     })
 }
