@@ -185,10 +185,11 @@ async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
             .subtract(new Vec3(-4, 0, 0))
             .add(new Vec3(0, 0, DISTANCE))
         for (let i = 0; i < 9; i++) {
-            console.log(pos)
+            //console.log(pos)
             if (bot.heldItem === null) {
                 await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
             }
+            bot.dig(getBlock(bot, pos))
             bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
                 .catch((e) => {
                     if (e instanceof Error && e.message.startsWith('No block has been placed')) {
