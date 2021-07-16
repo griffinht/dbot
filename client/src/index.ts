@@ -2,13 +2,15 @@ import {Vec3} from 'vec3'
 import {Bot, BotOptions} from 'mineflayer'
 import {Block} from 'prismarine-block';
 
+const environment: Environment = require('./bin/environment').environment
 const mineflayer = require('mineflayer')
 const v = require('vec3')
 //const data = require('minecraft-data')('1.16.5')
 
 const botOptions: BotOptions = {
-    host: 'localhost',
-    username: 'playerrr',
+    host: environment.host,
+    username: environment.username,
+    password: environment.password,
     checkTimeoutInterval: 1000 * 60 * 5,
 }
 
@@ -16,22 +18,41 @@ const ops = [
     'Lem0nPickles',
 ]
 
-
+console.log('Creating bot with username ' + botOptions.username)
 
 const bot = mineflayer.createBot(botOptions)
 
 bot.on('error', console.log)
 
+bot.on('login', () => {
+    console.log('Logged in to ' + botOptions.host)
+})
+bot.on('spawn', () => {
+    console.log('Spawned')
+})
+
 bot.on('kicked', (reason: String) => {
-    console.log('kicked ' + reason);
+    console.log('Kicked: ' + reason)
+})
+
+bot.on('entityHurt', () => {
+    console.log('entityHurt')
+})
+
+bot.on('death', () => {
+    console.log('death')
+})
+
+
+
+
+
+bot.on('death', () => {
+    bot.chat('ahhhhhh')
 })
 
 bot.on('entityHurt', () => {
     bot.chat('ouch')
-})
-
-bot.on('death', () => {
-    bot.chat('ahhhhhh')
 })
 
 bot.on('spawn', async () => {
