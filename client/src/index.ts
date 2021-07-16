@@ -77,7 +77,7 @@ bot.on('spawn', async () => {
                         break
                     case 'plant':
                         bot.whisper(username, 'planting')
-                        plant(bot, new Vec3(-130, 71, -174), new Vec3(0, 0, 1), 31)
+                        plant(bot, new Vec3(-130, 71, -174), 32, 3)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -176,32 +176,37 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
     return block;
 }
 
-async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
+async function plant(bot: Bot, start: Vec3, length: number, width: number) {
     const DISTANCE = 3
     start.subtract(new Vec3(0, 0, DISTANCE))
-    for (let i = 0; i < length; i++) {
-        await moveTo(bot, start, 1, .1)
-        let pos = start.clone()
-            .subtract(new Vec3(-4, 0, 0))
-            .add(new Vec3(0, 0, DISTANCE))
-        for (let i = 0; i < 9; i++) {
-            //console.log(pos)
-            if (bot.heldItem === null) {
-                await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
+    let a = 1;
+    for (let i = 0; i < width; i++) {
+        for (let i = 0; i < length; i++) {
+            await moveTo(bot, start, 1, .1)
+            let pos = start.clone()
+                .subtract(new Vec3(-4, 0, 0))
+                .add(new Vec3(0, 0, DISTANCE))
+            for (let i = 0; i < 9; i++) {
+                //console.log(pos)
+                if (bot.heldItem === null) {
+                    await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
+                }
+                bot.dig(getBlock(bot, pos))
+                bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
+                    .catch((e) => {
+                        if (e instanceof Error && e.message.startsWith('No block has been placed')) {
+                            console.log(e.message)
+                        } else {
+                            throw e
+                        }
+                    })
+                await bot.waitForTicks(1)
+                pos.add(new Vec3(-1, 0, 0))
             }
-            bot.dig(getBlock(bot, pos))
-            bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
-                .catch((e) => {
-                    if (e instanceof Error && e.message.startsWith('No block has been placed')) {
-                        console.log(e.message)
-                    } else {
-                        throw e
-                    }
-                })
-            await bot.waitForTicks(1)
-            pos.add(new Vec3(-1, 0, 0))
+            start.add(new Vec3(0, 0, a))
         }
-        start.add(add)
+        a *= -1
+        start.add(new Vec3(9, 0, 0))
     }
 }
 
