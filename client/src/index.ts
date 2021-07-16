@@ -5,7 +5,7 @@ import {Block} from 'prismarine-block';
 const environment: Environment = require('./bin/environment')
 const mineflayer = require('mineflayer')
 const v = require('vec3')
-//const data = require('minecraft-data')('1.16.5')
+const data = require('minecraft-data')('1.16.5')
 
 const botOptions: BotOptions = {
     host: environment.host,
@@ -186,6 +186,9 @@ async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
             .add(new Vec3(0, 0, 1))
         for (let i = 0; i < 9; i++) {
             console.log(pos)
+            if (bot.heldItem === null) {
+                await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
+            }
             try {
                 await bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
             } catch (e) {
