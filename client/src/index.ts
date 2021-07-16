@@ -78,7 +78,7 @@ bot.on('spawn', async () => {
                         break
                     case 'plant':
                         bot.whisper(username, 'planting')
-                        plant(bot, new Vec3(-130, 71, -174), 32, 3)
+                        plant(bot, new Vec3(-130, 71, -174), 31, 5)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -178,15 +178,15 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
 }
 
 async function plant(bot: Bot, start: Vec3, length: number, width: number) {
-    const FAR = 3
+    const FAR = 1
     const CLOSE = .1
     let a = 1;
     for (let i = 0; i < width; i++) {
-        for (let i = 0; i < length; i++) {
+        for (let j = 0; j < length + 1; j++) {
             await moveTo(bot, start, FAR, CLOSE)
             let pos = start.clone()
                 .subtract(new Vec3(-4, 0, 0))
-            for (let i = 0; i < 9; i++) {
+            for (let k = 0; k < 9; k++) {
                 //console.log(pos)
                 if (bot.heldItem === null) {
                     await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
@@ -206,7 +206,9 @@ async function plant(bot: Bot, start: Vec3, length: number, width: number) {
                 await bot.waitForTicks(1)
                 pos.add(new Vec3(-1, 0, 0))
             }
-            start.add(new Vec3(0, 0, a))
+            if (j !== length) {
+                start.add(new Vec3(0, 0, a))
+            }
         }
         a *= -1
         start.add(new Vec3(9, 0, 0))
@@ -226,7 +228,9 @@ bot.on('move', async () => {
         if (!bot.getControlState('forward')) {
             await bot.setControlState('forward', true)
         }
+        console.log('+' + move.target)
         await bot.lookAt(move.target)
+        console.log('-' + move.target)
         let distance = bot.entity.position.xzDistanceTo(move.target)
         if (!move.resolved) {
             if (distance < move.far) {
@@ -247,6 +251,7 @@ function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<voi
         if (move !== null) {
             move.resolve()
         }
+        console.log('t' + target)
         move = {
             target: target.clone().add(new Vec3(0.5, 1.5, 0.5)),
             far: far,
@@ -254,5 +259,6 @@ function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<voi
             resolved: false,
             resolve: resolve
         }
+        console.log('m' + move.target)
     })
 }
