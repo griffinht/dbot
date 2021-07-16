@@ -180,9 +180,7 @@ async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
     const DISTANCE = 3
     start.subtract(new Vec3(0, 0, DISTANCE))
     for (let i = 0; i < length; i++) {
-        console.log('move')
-        await moveTo(bot, start)
-        console.log('moved')
+        await moveTo(bot, start, 2, .2)
         let pos = start.clone()
             .subtract(new Vec3(-4, 0, 0))
             .add(new Vec3(0, 0, DISTANCE))
@@ -191,33 +189,40 @@ async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
             if (bot.heldItem === null) {
                 await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
             }
-            try {
-                await bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
-            } catch (e) {
-                if (e instanceof Error && e.message.startsWith('No block has been placed')) {
-                    console.log(e.message)
-                } else {
-                    throw e
-                }
-            }
+            bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
+                .catch((e) => {
+                    if (e instanceof Error && e.message.startsWith('No block has been placed')) {
+                        console.log(e.message)
+                    } else {
+                        throw e
+                    }
+                })
+            await bot.waitForTicks(1)
             pos.add(new Vec3(-1, 0, 0))
         }
         start.add(add)
     }
 }
 
-function moveTo(bot: Bot, target: Vec3): Promise<void> {
+function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<void> {
     let realTarget = target.clone().add(new Vec3(0.5, 1.5, 0.5))
     return new Promise(async (resolve, reject) => {
+        let resolved = false;
         await bot.lookAt(realTarget)
         await bot.setControlState('forward', true)
         async function move() {
             await bot.lookAt(realTarget, true)
-            if (bot.entity.position.xzDistanceTo(realTarget) < .2) {
+            if (bot.entity.position.xzDistanceTo(realTarget) > far) {
+                return
+            }
+            if (!resolved) {
+                resolved = true
+                resolve()
+            }
+            if (bot.entity.position.xzDistanceTo(realTarget) < close) {
                 await bot.setControlState('forward', false)
                 //unregister event handler - important!
                 bot.off('move', move)
-                resolve()
             }
         }
 
