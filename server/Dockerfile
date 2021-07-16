@@ -4,8 +4,9 @@ RUN apk --no-cache add curl
 
 WORKDIR /usr/src/app
 
-RUN curl "https://papermc.io/api/v1/paper/1.16.5/latest/download" -o server.jar
+RUN curl -o server.jar "https://papermc.io/api/v1/paper/1.16.5/latest/download"
 RUN java -jar server.jar; exit 0
+COPY bin .
 
 FROM adoptopenjdk/openjdk16:alpine-jre
 
