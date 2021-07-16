@@ -4,7 +4,7 @@ import {Block} from 'prismarine-block';
 
 const environment: Environment = require('./bin/environment')
 const mineflayer = require('mineflayer')
-const v = require('vec3')
+require('vec3')
 const data = require('minecraft-data')('1.16.5')
 
 const botOptions: BotOptions = {
