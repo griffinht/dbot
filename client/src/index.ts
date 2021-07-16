@@ -77,7 +77,7 @@ bot.on('spawn', async () => {
                         break
                     case 'plant':
                         bot.whisper(username, 'planting')
-                        plant(bot, new Vec3(-130, 71, -175), new Vec3(0, 0, 1), 31)
+                        plant(bot, new Vec3(-130, 71, -174), new Vec3(0, 0, 1), 31)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -177,13 +177,15 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
 }
 
 async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
+    const DISTANCE = 3
+    start.subtract(new Vec3(0, 0, DISTANCE))
     for (let i = 0; i < length; i++) {
         console.log('move')
         await moveTo(bot, start)
         console.log('moved')
         let pos = start.clone()
             .subtract(new Vec3(-4, 0, 0))
-            .add(new Vec3(0, 0, 1))
+            .add(new Vec3(0, 0, DISTANCE))
         for (let i = 0; i < 9; i++) {
             console.log(pos)
             if (bot.heldItem === null) {
