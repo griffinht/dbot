@@ -1,8 +1,9 @@
 import {Vec3} from 'vec3'
 import {Bot, BotOptions} from 'mineflayer'
 import {Block} from 'prismarine-block';
+import {createDeflateRaw} from "zlib";
 
-const environment: Environment = require('./bin/environment').environment
+const environment: Environment = require('./bin/environment')
 const mineflayer = require('mineflayer')
 const v = require('vec3')
 //const data = require('minecraft-data')('1.16.5')
@@ -75,9 +76,9 @@ bot.on('spawn', async () => {
                         bot.whisper(username, 'mining')
                         mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 0, 0))
                         break
-                    case 'sleepwake':
-                        await sleepWake(bot, bed)
-                        bot.whisper(username, 'slept')
+                    case 'plant':
+                        bot.whisper(username, 'planting')
+                        plant(bot, new Vec3(-129, 71, -174), new Vec3(0, 0, 1), 31)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -154,30 +155,6 @@ function parseInts(strings: string[], offset: number, amount: number): number[] 
     return numbers;
 }
 
-async function sleepWake(bot: Bot, bed: Vec3) {
-    try {
-        let block = getBlock(bot, bed);
-
-        await bot.activateBlock(block)
-        await bot.waitForTicks(2)
-        if (!bot.isSleeping) {
-            throw new Error('Can\'t sleep. There must be an existing unoccupied bed within reach at night or during thunder not nearby monsters')
-        }
-
-        await bot.wake()
-        await bot.waitForTicks(1)
-        if (bot.isSleeping) {
-            throw new Error('Can\'t wake up.')
-        }
-    } catch (e) {
-        if (e instanceof Error) {
-            throw new Error('Error while sleepWake at ' + bed + ': ' + e.message)
-        } else {
-            throw e;
-        }
-    }
-}
-
 async function mine(bot: Bot, input: Vec3, output: Vec3, add: Vec3) {
     let bottom = true;
     let up = new Vec3(0, 1, 0);
@@ -200,5 +177,30 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
     return block;
 }
 
-let spawn: Vec3 = new Vec3(188, 79, -225)
-let bed: Vec3 = new Vec3(188, 79, -224)
+async function plant(bot: Bot, start: Vec3, add: Vec3, length: number) {
+    await moveTo(bot, start)
+    //while (true) {
+    let pos = start.clone().subtract(new Vec3(-4, 0, 0))
+    for (let i = 0; i < 8; i++) {
+        console.log(pos)
+        await bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
+        pos.add(new Vec3(-1, 0, 0))
+    }
+    start.add(add)
+    //}
+}
+
+function moveTo(bot: Bot, target: Vec3): Promise<void> {
+    let realTarget = target.clone().add(new Vec3(0.5, 0.5, 0.5))
+    return new Promise(async (resolve, reject) => {
+        await bot.lookAt(realTarget)
+        await bot.setControlState('forward', true)
+        bot.on('move', async () => {
+            await bot.lookAt(realTarget)
+            if (bot.entity.position.clone().floor().equals(target)) {
+                await bot.setControlState('forward', false)
+                resolve()
+            }
+        })
+    })
+}
