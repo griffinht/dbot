@@ -331,22 +331,15 @@ class Mutex {
 let move: Move | null = null
 let mutex: Mutex = new Mutex()
 bot.on('move', async () => {
-    let a = Math.random()
-    console.log(a + 'move acquire')
     let release = await mutex.acquire()
-    console.log(a + 'move acquired')
     if (move === null) {
-        console.log(a + 'move released (null)')
         release()
         return
     }
     if (!bot.getControlState('forward')) {
         await bot.setControlState('forward', true)
     }
-    // seems to fix random npe
-    console.log(a + '', move)
-    await bot.lookAt(move.target)
-    console.log(a + '', move)
+    bot.lookAt(move.target)
     let distance = bot.entity.position.xzDistanceTo(move.target)
     if (!move.resolved) {
         if (distance < move.far) {
@@ -357,18 +350,15 @@ bot.on('move', async () => {
         if (distance < move.close
             || distance > move.far) {
             await bot.setControlState('forward', false)
-            console.log(a + 'move null')
             move = null
         }
     }
-    console.log(a + 'move released')
     release()
 })
 
 function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<void> {
     return new Promise(async resolve => {
         let release = await mutex.acquire()
-        console.log('moveTo acquired')
         if (move !== null) {
             move.resolve()
         }
@@ -379,7 +369,6 @@ function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<voi
             resolved: false,
             resolve: resolve
         }
-        console.log('moveTo released')
         release()
     })
 }
