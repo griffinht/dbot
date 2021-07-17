@@ -221,7 +221,6 @@ async function getAndWithdraw(bot: Bot, location: Vec3, item: Item, maxAmount: n
         if (i === null) {
             break
         }
-        console.log(i)
         let amt = i.count;
         try {
             // @ts-ignore
