@@ -305,7 +305,6 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: 
                 })
                 bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
                     .catch((e) => {
-                        console.log(e.message)
                         if (e instanceof Error) {
                             if (!e.message.startsWith('No block has been placed')) {
                                 console.log(e.message)
