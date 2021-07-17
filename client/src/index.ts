@@ -251,8 +251,6 @@ async function getAndWithdraw(bot: Bot, location: Vec3, item: Item, maxAmount: n
 // finds largest stack and returns slot
 function fixedWindowCount(window: any, itemType: number) {
     let maxSlot = 0
-    console.log(window.inventoryStart)
-    console.log(window.inventoryEnd)
     for (let i = 0; i < window.slots.length; i++) {
         if ((i >= window.inventoryStart && i <= window.inventoryEnd)
             || window.slots[i] === null
