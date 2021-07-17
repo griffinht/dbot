@@ -227,6 +227,7 @@ async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmo
 }
 
 // window#count always returns 0
+// todo what is the window type?
 function fixedWindowCount(window: any, itemType: number): number {
     let count = 0;
     for (let item of window.slots) {
@@ -236,7 +237,6 @@ function fixedWindowCount(window: any, itemType: number): number {
             count += item.count
         }
     }
-    console.log(count)
     return count
 }
 
