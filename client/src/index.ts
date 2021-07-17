@@ -214,11 +214,9 @@ async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmo
     // @ts-ignore
     let window = await bot.openChest(getBlock(bot, location));
     await bot.waitForTicks(2)
-    let amt = Math.min(maxAmount, fixedWindowCount(window, itemType));
-    if (amt <= 64) {
-        return false;
-    }
-    await window.withdraw(itemType, null, amt - 64)
+    let slot = fixedWindowCount(window, itemType)
+    // @ts-ignore
+    await window.withdraw(itemType, null, window.slots[slot].count);
     await bot.waitForTicks(2)
     await window.close();
 
@@ -231,18 +229,18 @@ async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmo
     return true;
 }
 
-// window#count always returns 0
+// window#count always returns 0??
 // todo what is the window type?
-function fixedWindowCount(window: any, itemType: number): number {
-    let count = 0;
-    for (let item of window.slots) {
-        if (item === null) continue
-
-        if (item.type === itemType) {
-            count += item.count
-        }
+// finds largest stack and returns slot
+function fixedWindowCount(window: any, itemType: number) {
+    let maxSlot = 0
+    for (let i = 0; i < window.slots.length; i++) {
+        if (window.slots[i] === null
+            || window.slots[i].type !== itemType
+            || window.slots[i] <= window.slots[maxSlot]) continue
+        maxSlot = i
     }
-    return count
+    return maxSlot;
 }
 
 // Item of seed to plant
@@ -259,10 +257,16 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: 
                 .subtract(new Vec3(-Math.floor(width / 2), 0, 0))
             for (let k = 0; k < width; k++) {
                 if (bot.heldItem === null) {
-                    if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null && !await getAndWithdraw(bot, input, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
-                        throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + input)
+                    if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null) {
+                        if (!await getAndWithdraw(bot, input, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
+                            throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + input)
+                        }
+                        // bot just moved away, now it needs to move back
+                        await moveTo(bot, start, FAR, CLOSE)
                     }
-                    if (bot.heldItem === null) { // bot#equip errors when hand is already full
+                    if (bot.heldItem === null // bot#equip errors when hand is already full
+                        // @ts-ignore idk why this is an error
+                        || bot.heldItem.type !== SEED_TYPE.id) {
                         try {
                             // @ts-ignore bot#equip is able to take itemType/id number instead of Item reference
                             await bot.equip(SEED_TYPE.id, 'hand');
@@ -284,6 +288,7 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: 
                 })
                 bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
                     .catch((e) => {
+                        console.log(e.message)
                         if (e instanceof Error) {
                             if (!e.message.startsWith('No block has been placed')) {
                                 console.log(e.message)
@@ -291,7 +296,7 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: 
                                 //ignored
                             }
                         } else {
-                            throw e
+                            //throw e
                         }
                     })
                 await bot.waitForTicks(1)
