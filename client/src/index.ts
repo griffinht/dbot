@@ -77,16 +77,18 @@ bot.on('spawn', async () => {
                         mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 0, 0))
                         break
                     case 'farm':
-                        let usage = 'Usage: farm x y z length width rows'
+                        let usage = 'Usage: farm start (x y z) length width rows input (x y z)'
                         let start
                         let length
                         let width
                         let rows
+                        let input
                         try {
                             start = toVec3(strictParseInts(split, 1, 3))
                             length = strictParseInt(split[4])
                             width = strictParseInt(split[5])
                             rows = strictParseInt(split[6])
+                            input = toVec3(strictParseInts(split, 1 + 6, 3))
                         } catch (e) {
                             if (e instanceof Error) {
                                 bot.whisper(username, e.message + '. ' + usage)
@@ -96,7 +98,7 @@ bot.on('spawn', async () => {
                             }
                         }
                         bot.whisper(username, 'Farming ' + length + 'x' + width + ' area with ' + rows + ' rows starting at ' + start)
-                        farm(bot, start, length, width, rows)
+                        farm(bot, start, length, width, rows, input)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -202,8 +204,6 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
     return block;
 }
 
-// location of input of seeds
-const INPUT = new Vec3(-134, 72, -174)
 // maximum amount to withdraw each refill
 const INGREDIENT_AMOUNT = 512
 
@@ -215,11 +215,13 @@ async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmo
     if (amt === 0) {
         return false
     }
-    await window.transfer({
-        window: window,
-        itemType: itemType,
-        count: amt
-    })
+    await window.withdraw(itemType, null, amt)
+    await window.close()
+    // https://github.com/PrismarineJS/mineflayer/issues/1500
+    // seems to be required to update the player inventory
+    // otherwise bot.inventory remains empty
+    // @ts-ignore
+    await bot.openContainer(getBlock(bot, location))
     await window.close()
     return true
 }
@@ -241,7 +243,7 @@ function fixedWindowCount(window: any, itemType: number): number {
 // Item of seed to plant
 const SEED_TYPE: Item = data.itemsByName.wheat_seeds
 
-async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: number) {
+async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: number, input: Vec3) {
     const FAR = 1
     const CLOSE = .1
     let a = 1;
@@ -252,16 +254,29 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: 
                 .subtract(new Vec3(-Math.floor(width / 2), 0, 0))
             for (let k = 0; k < width; k++) {
                 if (bot.heldItem === null) {
-                    if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null && !await getAndWithdraw(bot, INPUT, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
-                        throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + INPUT)
+                    if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null && !await getAndWithdraw(bot, input, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
+                        throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + input)
                     }
-                    await bot.waitForTicks(1)
                     if (bot.heldItem === null) { // bot#equip errors when hand is already full
-                        // @ts-ignore bot#equip is able to take itemType/id number instead of Item reference
-                        await bot.equip(SEED_TYPE.id, 'hand');
+                        try {
+                            // @ts-ignore bot#equip is able to take itemType/id number instead of Item reference
+                            await bot.equip(SEED_TYPE.id, 'hand');
+                        } catch (e) {
+                            if (e instanceof Error) {
+                                throw new Error('Error while equipping ' + SEED_TYPE.id + '. ' + e.message + ', ' + bot.inventory.items().toString())
+                            } else {
+                                throw e
+                            }
+                        }
                     }
                 }
-                bot.dig(getBlock(bot, pos))
+                bot.dig(getBlock(bot, pos)).catch((e) => {
+                    if (e instanceof Error) {
+                        throw new Error('Error while digging at ' + pos + '. ' + e.message)
+                    } else {
+                        throw e
+                    }
+                })
                 bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
                     .catch((e) => {
                         if (e instanceof Error) {
@@ -299,9 +314,8 @@ bot.on('move', async () => {
         if (!bot.getControlState('forward')) {
             await bot.setControlState('forward', true)
         }
-        console.log('+' + move.target)
-        await bot.lookAt(move.target)
-        console.log('-' + move.target)
+        // seems to fix random npe
+        await bot.lookAt(move.target.clone())
         let distance = bot.entity.position.xzDistanceTo(move.target)
         if (!move.resolved) {
             if (distance < move.far) {
@@ -322,7 +336,6 @@ function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<voi
         if (move !== null) {
             move.resolve()
         }
-        console.log('t' + target)
         move = {
             target: target.clone().add(new Vec3(0.5, 1.5, 0.5)),
             far: far,
@@ -330,6 +343,5 @@ function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<voi
             resolved: false,
             resolve: resolve
         }
-        console.log('m' + move.target)
     })
 }
