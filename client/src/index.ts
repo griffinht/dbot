@@ -1,4 +1,4 @@
-import {Vec3} from 'vec3'
+import v, {Vec3} from 'vec3'
 import {Bot, BotOptions} from 'mineflayer'
 import {Block} from 'prismarine-block';
 import {Item} from "minecraft-data";
@@ -208,22 +208,27 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
 const INGREDIENT_AMOUNT = 512
 
 async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmount: number): Promise<boolean> {
-    await moveTo(bot, location, 2, 2)
+    await moveTo(bot, location, 2, 2);
+    await bot.waitForTicks(2)
     // @ts-ignore https://github.com/PrismarineJS/mineflayer/blob/master/docs/api.md#botopenchestchestblock-or-minecartchestentity
-    let window = await bot.openContainer(getBlock(bot, location))
-    let amt = Math.min(maxAmount, fixedWindowCount(window, itemType))
-    if (amt === 0) {
-        return false
+    // @ts-ignore
+    let window = await bot.openChest(getBlock(bot, location));
+    await bot.waitForTicks(2)
+    let amt = Math.min(maxAmount, fixedWindowCount(window, itemType));
+    if (amt <= 64) {
+        return false;
     }
-    await window.withdraw(itemType, null, amt)
-    await window.close()
+    await window.withdraw(itemType, null, amt - 64)
+    await bot.waitForTicks(2)
+    await window.close();
+
     // https://github.com/PrismarineJS/mineflayer/issues/1500
     // seems to be required to update the player inventory
     // otherwise bot.inventory remains empty
     // @ts-ignore
-    await bot.openContainer(getBlock(bot, location))
-    await window.close()
-    return true
+    await (await bot.openContainer(getBlock(bot, location))).close();
+    await bot.waitForTicks(2)
+    return true;
 }
 
 // window#count always returns 0
@@ -308,31 +313,62 @@ interface Move {
     resolved: boolean,
     resolve: (value: void | PromiseLike<void>) => void
 }
+
+class Mutex {
+    mutex: Promise<void> = Promise.resolve()
+
+    acquire(): Promise<() => void> {
+        let old = this.mutex
+        let release: () => void = Promise.resolve
+        this.mutex = new Promise<void>(resolve => {
+            release = resolve
+        })
+        return new Promise<() => void>(resolve => {
+            old.then(() => resolve(release))
+        })
+    }
+}
 let move: Move | null = null
+let mutex: Mutex = new Mutex()
 bot.on('move', async () => {
-    if (move !== null) {
-        if (!bot.getControlState('forward')) {
-            await bot.setControlState('forward', true)
+    let a = Math.random()
+    console.log(a + 'move acquire')
+    let release = await mutex.acquire()
+    console.log(a + 'move acquired')
+    if (move === null) {
+        console.log(a + 'move released (null)')
+        release()
+        return
+    }
+    if (!bot.getControlState('forward')) {
+        await bot.setControlState('forward', true)
+    }
+    // seems to fix random npe
+    console.log(a + '', move)
+    await bot.lookAt(move.target)
+    console.log(a + '', move)
+    let distance = bot.entity.position.xzDistanceTo(move.target)
+    if (!move.resolved) {
+        if (distance < move.far) {
+            move.resolved = true
+            move.resolve()
         }
-        // seems to fix random npe
-        await bot.lookAt(move.target.clone())
-        let distance = bot.entity.position.xzDistanceTo(move.target)
-        if (!move.resolved) {
-            if (distance < move.far) {
-                move.resolved = true
-                move.resolve()
-            }
-        } else {
-            if (distance < move.close
-                || distance > move.far) {
-                await bot.setControlState('forward', false)
-                move = null
-            }
+    } else {
+        if (distance < move.close
+            || distance > move.far) {
+            await bot.setControlState('forward', false)
+            console.log(a + 'move null')
+            move = null
         }
     }
+    console.log(a + 'move released')
+    release()
 })
+
 function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async resolve => {
+        let release = await mutex.acquire()
+        console.log('moveTo acquired')
         if (move !== null) {
             move.resolve()
         }
@@ -343,5 +379,7 @@ function moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<voi
             resolved: false,
             resolve: resolve
         }
+        console.log('moveTo released')
+        release()
     })
 }
