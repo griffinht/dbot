@@ -1,7 +1,7 @@
 import {Vec3} from 'vec3'
 import {Bot, BotOptions} from 'mineflayer'
 import {Block} from 'prismarine-block';
-import {createDeflateRaw} from "zlib";
+import {Item} from "minecraft-data";
 
 const environment: Environment = require('./bin/environment')
 const mineflayer = require('mineflayer')
@@ -76,9 +76,9 @@ bot.on('spawn', async () => {
                         bot.whisper(username, 'mining')
                         mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 0, 0))
                         break
-                    case 'plant':
-                        bot.whisper(username, 'planting')
-                        plant(bot, new Vec3(-130, 71, -174), 31, 5)
+                    case 'farm':
+                        bot.whisper(username, 'farming')
+                        farm(bot, new Vec3(-130, 71, -174), 31, 5)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -177,7 +177,42 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
     return block;
 }
 
-async function plant(bot: Bot, start: Vec3, length: number, width: number) {
+// location of input of seeds
+const INPUT = new Vec3(-134, 72, -174)
+// maximum amount to withdraw each refill
+const INGREDIENT_AMOUNT = 512
+
+async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmount: number): Promise<boolean> {
+    await moveTo(bot, location, 2, 2)
+    // @ts-ignore https://github.com/PrismarineJS/mineflayer/blob/master/docs/api.md#botopenchestchestblock-or-minecartchestentity
+    let window = await bot.openContainer(getBlock(bot, location))
+    let amt = Math.min(maxAmount, fixedWindowCount(window, itemType))
+    if (amt === 0) {
+        return false
+    }
+    await window.withdraw(itemType, null, amt)
+    await window.close()
+    return true
+}
+
+// window#count always returns 0
+function fixedWindowCount(window: any, itemType: number): number {
+    let count = 0;
+    for (let item of window.slots) {
+        if (item === null) continue
+
+        if (item.type === itemType) {
+            count += item.count
+        }
+    }
+    console.log(count)
+    return count
+}
+
+// Item of seed to plant
+const SEED_TYPE: Item = data.itemsByName.wheat_seeds
+
+async function farm(bot: Bot, start: Vec3, length: number, width: number) {
     const FAR = 1
     const CLOSE = .1
     let a = 1;
@@ -187,9 +222,15 @@ async function plant(bot: Bot, start: Vec3, length: number, width: number) {
             let pos = start.clone()
                 .subtract(new Vec3(-4, 0, 0))
             for (let k = 0; k < 9; k++) {
-                //console.log(pos)
                 if (bot.heldItem === null) {
-                    await bot.equip(data.itemsByName.wheat_seeds.id, 'hand')
+                    if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null && !await getAndWithdraw(bot, INPUT, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
+                        throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + INPUT)
+                    }
+                    await bot.waitForTicks(1)
+                    if (bot.heldItem === null) { // bot#equip errors when hand is already full
+                        // @ts-ignore bot#equip is able to take itemType/id number instead of Item reference
+                        await bot.equip(SEED_TYPE.id, 'hand');
+                    }
                 }
                 bot.dig(getBlock(bot, pos))
                 bot.placeBlock(getBlock(bot, pos), new Vec3(0, 1, 0))
