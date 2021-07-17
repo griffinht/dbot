@@ -77,8 +77,26 @@ bot.on('spawn', async () => {
                         mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 0, 0))
                         break
                     case 'farm':
-                        bot.whisper(username, 'farming')
-                        farm(bot, new Vec3(-130, 71, -174), 31, 5)
+                        let usage = 'Usage: farm x y z length width rows'
+                        let start
+                        let length
+                        let width
+                        let rows
+                        try {
+                            start = toVec3(strictParseInts(split, 1, 3))
+                            length = strictParseInt(split[4])
+                            width = strictParseInt(split[5])
+                            rows = strictParseInt(split[6])
+                        } catch (e) {
+                            if (e instanceof Error) {
+                                bot.whisper(username, e.message + '. ' + usage)
+                                break
+                            } else {
+                                throw e
+                            }
+                        }
+                        bot.whisper(username, 'Farming ' + length + 'x' + width + ' area with ' + rows + ' rows starting at ' + start)
+                        farm(bot, start, length, width, rows)
                         break
                     case 'move':
                         let move = async (direction: string, ticks: number) => {
@@ -123,8 +141,7 @@ bot.on('spawn', async () => {
                             return
                         }
 
-                        let coords = parseInts(split, 1, 3)
-                        bot.lookAt(bot.entity.position.clone().add(new Vec3(coords[0], coords[1], coords[2])))
+                        bot.lookAt(bot.entity.position.clone().add(toVec3(strictParseInts(split, 1, 3))))
                         break
                     default:
                         bot.whisper(username, 'Unknown command ' + message)
@@ -132,24 +149,32 @@ bot.on('spawn', async () => {
             } catch (e) {
                 if (e instanceof Error) {
                     bot.whisper(username, 'Error: ' + e.message)
+                } else {
+                    throw e
                 }
             }
         }
     })
 })
 
-function parseInts(strings: string[], offset: number, amount: number): number[] {
-    let numbers: number[] = [];
-
-    if (strings.length - 1 < amount) {
+function strictParseInt(string: string): number {
+    if (string == null) {
         throw new Error('Not enough arguments')
     }
+    let number = parseInt(string)
+    if (isNaN(number)) {
+        throw new Error(string + ' is not a number')
+    }
+    return number
+}
+function toVec3(numbers: number[]): Vec3 {
+    return new Vec3(numbers[0], numbers[1], numbers[2])
+}
+function strictParseInts(strings: string[], offset: number, amount: number): number[] {
+    let numbers: number[] = [];
 
-    for (let i = 0; i < strings.length && (amount <= 0 || i < amount); i++) {
-        numbers[i] = parseInt(strings[i + 1])
-        if (isNaN(numbers[i])) {
-            throw new Error(strings[i + 1] + ' is not a number')
-        }
+    for (let i = 0; i < amount && (amount <= 0 || i < amount); i++) {
+        numbers[i] = strictParseInt(strings[i + offset])
     }
 
     return numbers;
@@ -190,7 +215,11 @@ async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmo
     if (amt === 0) {
         return false
     }
-    await window.withdraw(itemType, null, amt)
+    await window.transfer({
+        window: window,
+        itemType: itemType,
+        count: amt
+    })
     await window.close()
     return true
 }
@@ -212,16 +241,16 @@ function fixedWindowCount(window: any, itemType: number): number {
 // Item of seed to plant
 const SEED_TYPE: Item = data.itemsByName.wheat_seeds
 
-async function farm(bot: Bot, start: Vec3, length: number, width: number) {
+async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: number) {
     const FAR = 1
     const CLOSE = .1
     let a = 1;
-    for (let i = 0; i < width; i++) {
+    for (let i = 0; i < rows; i++) {
         for (let j = 0; j < length + 1; j++) {
             await moveTo(bot, start, FAR, CLOSE)
             let pos = start.clone()
-                .subtract(new Vec3(-4, 0, 0))
-            for (let k = 0; k < 9; k++) {
+                .subtract(new Vec3(-Math.floor(width / 2), 0, 0))
+            for (let k = 0; k < width; k++) {
                 if (bot.heldItem === null) {
                     if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null && !await getAndWithdraw(bot, INPUT, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
                         throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + INPUT)
@@ -238,9 +267,10 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number) {
                         if (e instanceof Error) {
                             if (!e.message.startsWith('No block has been placed')) {
                                 console.log(e.message)
+                            } else {
+                                //ignored
                             }
                         } else {
-                            console.error('Throwing!')
                             throw e
                         }
                     })
