@@ -207,16 +207,33 @@ function getBlock(bot: Bot, vec3: Vec3): Block {
 // maximum amount to withdraw each refill
 const INGREDIENT_AMOUNT = 512
 
-async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmount: number): Promise<boolean> {
+async function getAndWithdraw(bot: Bot, location: Vec3, item: Item, maxAmount: number): Promise<boolean> {
     await moveTo(bot, location, 2, 2);
     await bot.waitForTicks(2)
     // @ts-ignore https://github.com/PrismarineJS/mineflayer/blob/master/docs/api.md#botopenchestchestblock-or-minecartchestentity
     // @ts-ignore
     let window = await bot.openChest(getBlock(bot, location));
     await bot.waitForTicks(2)
-    let slot = fixedWindowCount(window, itemType)
-    // @ts-ignore
-    await window.withdraw(itemType, null, window.slots[slot].count);
+    let count = 0;
+    while (count < maxAmount) {
+        // @ts-ignore stupid incomplete type definition
+        let i = window.slots[fixedWindowCount(window, item.id)];
+        if (i === null) {
+            break
+        }
+        console.log(i)
+        let amt = i.count;
+        try {
+            // @ts-ignore
+            await window.withdraw(item.id, null, amt);
+        } catch (e) {
+            throw new Error('Error withdrawing ' + amt + ' ' + item.name + ' from container at ' + location)
+        }
+        count += amt
+    }
+    if (count === 0) {
+        return false
+    }
     await bot.waitForTicks(2)
     await window.close();
 
@@ -234,8 +251,11 @@ async function getAndWithdraw(bot: Bot, location: Vec3, itemType: number, maxAmo
 // finds largest stack and returns slot
 function fixedWindowCount(window: any, itemType: number) {
     let maxSlot = 0
+    console.log(window.inventoryStart)
+    console.log(window.inventoryEnd)
     for (let i = 0; i < window.slots.length; i++) {
-        if (window.slots[i] === null
+        if ((i >= window.inventoryStart && i <= window.inventoryEnd)
+            || window.slots[i] === null
             || window.slots[i].type !== itemType
             || window.slots[i] <= window.slots[maxSlot]) continue
         maxSlot = i
@@ -258,7 +278,7 @@ async function farm(bot: Bot, start: Vec3, length: number, width: number, rows: 
             for (let k = 0; k < width; k++) {
                 if (bot.heldItem === null) {
                     if (bot.inventory.findInventoryItem(SEED_TYPE.id, null, false) === null) {
-                        if (!await getAndWithdraw(bot, input, SEED_TYPE.id, INGREDIENT_AMOUNT)) {
+                        if (!await getAndWithdraw(bot, input, SEED_TYPE, INGREDIENT_AMOUNT)) {
                             throw new Error('Can\'t find any ' + SEED_TYPE.displayName + ' in player inventory or input inventory at ' + input)
                         }
                         // bot just moved away, now it needs to move back
