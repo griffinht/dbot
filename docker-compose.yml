@@ -1,3 +1,6 @@
+volumes:
+    run:
+
 services:
     server:
         image: stzups/server
@@ -5,3 +8,5 @@ services:
             context: server
         ports:
             - 25565:25565
+        volumes:
+            - "run:/run"
