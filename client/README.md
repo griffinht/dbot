@@ -13,11 +13,19 @@ Written in Typescript, compiled to Javascript, run with Node.js, containerized w
 
 ### Deploy
 
-Deploy via Docker
+Deploy with [Docker Compose](https://docs.docker.com/compose/install/)
+
+`docker-compose up client`
 
 ## Development
 
+Requires [Node.js 16.5.0](https://nodejs.org/en/download/current/)
+
 ### Build
+
+Install Typescript globally
+
+`npm install -g typescript`
 
 Build with Typescript
 
@@ -27,11 +35,9 @@ Outputs Javascript to `./build/`
 
 ### Run
 
-Requires Node.js 16.5.0 (https://nodejs.org/en/download/current/)
-
 `node build`
 
-Runs the Node.js application built in the previous step `./build/`
+Runs the Node.js application built in the previous step in `./build/`
 
 By default, the bot will connect to `localhost:25565` with username `bot`. See [Config](documentation/CONFIG.md) to change this.
 
