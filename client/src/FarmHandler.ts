@@ -46,10 +46,10 @@ export default class FarmHandler {
                         }
                         if (this.bot.heldItem === null // bot#equip errors when hand is already full
                             // @ts-ignore idk why this is an error
-                            || bot.heldItem.type !== SEED_TYPE.id) {
+                            || bot.heldItem.type !== seedType.id) {
                             try {
                                 // @ts-ignore bot#equip is able to take itemType/id number instead of Item reference
-                                await bot.equip(SEED_TYPE.id, 'hand');
+                                await this.bot.equip(seedType.id, 'hand');
                             } catch (e) {
                                 if (e instanceof Error) {
                                     throw new Error('Error while equipping ' + seedType.id + '. ' + e.message + ', ' + this.bot.inventory.items().toString())
