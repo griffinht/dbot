@@ -3,7 +3,11 @@ import {Bot, BotOptions} from 'mineflayer'
 import {Block} from 'prismarine-block';
 import {Item} from "minecraft-data";
 
-const environment: Environment = require('./bin/environment')
+const environment: Environment = new class implements Environment {
+    host: string = process.argv[0]
+    username: string = process.argv[1]
+    password: string = process.argv[2]
+}
 const mineflayer = require('mineflayer')
 require('vec3')
 const data = require('minecraft-data')('1.16.5')
