@@ -2,6 +2,7 @@ import {Bot, BotOptions} from "mineflayer";
 import CommandHandler from "./CommandHandler.js";
 import MoveHandler from "./MoveHandler.js";
 import FarmHandler from "./FarmHandler.js";
+import SnitchHandler from "./SnitchHandler.js";
 
 const mineflayer = require('mineflayer')
 
@@ -27,6 +28,7 @@ export default class BotHandler {
         this.bot.on('entityHurt', () => this.bot.chat('ouch'))
         this.bot.on('spawn', async () => {
             new CommandHandler(this.bot, ops, new FarmHandler(this.bot, new MoveHandler(this.bot)))
+            new SnitchHandler
 
             console.log('Ready')
             for (let op in ops) {

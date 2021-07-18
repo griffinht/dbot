@@ -1,8 +1,6 @@
-//§6Enter  §aWheelOf4Chan  §bLogsnitch  §e[2111 59 -12185]  §a[8m §cSouth West§a]
-
 import {Bot} from "mineflayer";
 
-class Snitch {
+export default class SnitchHandler {
     bot: Bot
 
     constructor(bot: Bot) {
