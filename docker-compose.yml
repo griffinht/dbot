@@ -10,3 +10,7 @@ services:
             - 25565:25565
         volumes:
             - "run:/run"
+    client:
+        image: stzups/client
+        build:
+            context: client

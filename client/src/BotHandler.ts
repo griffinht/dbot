@@ -4,14 +4,16 @@ import MoveHandler from "./MoveHandler.js";
 import FarmHandler from "./FarmHandler.js";
 import SnitchHandler from "./SnitchHandler.js";
 
-const mineflayer = require('mineflayer')
+// static es6 import breaks things :(
+const createBot = require('mineflayer').createBot
+//import {createBot} from "mineflayer";
 
 export default class BotHandler {
     bot: Bot
 
     constructor(botOptions: BotOptions, ops: string[]) {
         console.log('Creating bot with username ' + botOptions.username)
-        this.bot = mineflayer.createBot(botOptions)
+        this.bot = createBot(botOptions)
         this.bot.on('error', console.log)
 
         this.bot.on('login', () => console.log('Logged in to ' + botOptions.host))

@@ -4,7 +4,10 @@ import {Vec3} from "vec3";
 import {strictParseInt, strictParseInts, toVec3} from "./util.js";
 import FarmHandler from "./FarmHandler.js";
 import MoveHandler from "./MoveHandler.js";
-const data = require('minecraft-data')('1.16.5')
+import MinecraftData from "minecraft-data"
+//const MinecraftData = require('minecraft-data')
+const data = MinecraftData('1.16.5')
+
 
 export default class CommandHandler {
     constructor(bot: Bot, ops: string[], moveHandler: MoveHandler, farmHandler: FarmHandler) {
