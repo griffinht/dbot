@@ -3,10 +3,11 @@ import {mine} from "./miner.js";
 import {Vec3} from "vec3";
 import {strictParseInt, strictParseInts, toVec3} from "./util.js";
 import FarmHandler from "./FarmHandler.js";
+import MoveHandler from "./MoveHandler.js";
 const data = require('minecraft-data')('1.16.5')
 
 export default class CommandHandler {
-    constructor(bot: Bot, ops: string[], farmHandler: FarmHandler) {
+    constructor(bot: Bot, ops: string[], moveHandler: MoveHandler, farmHandler: FarmHandler) {
         bot.on('whisper', async (username: string, message: string) => {
             if (!ops.includes(username)) {
                 console.log(username + ': ' + message)
@@ -89,6 +90,14 @@ export default class CommandHandler {
                             await move(direction, direction !== 'jump' ? ticks : 0)
                         }
                         break
+                    case 'moveto':
+                        if (split.length !== 4) {
+                            bot.whisper(username, 'Incorrect arguments, try moveto x y z')
+                        }
+
+                        let target = toVec3(strictParseInts(split, 1, 3))
+                        bot.whisper(username, 'Moving to ' + target)
+                        moveHandler.moveTo(bot, target, .5, .1)
                     case 'look':
                         if (split.length !== 4) {
                             bot.whisper(username, 'Incorrect arguments, try look x y z')

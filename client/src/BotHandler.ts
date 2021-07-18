@@ -23,7 +23,8 @@ export default class BotHandler {
         this.bot.on('death', () => this.bot.chat('ahhhhhh'))
         this.bot.on('entityHurt', () => this.bot.chat('ouch'))
         this.bot.on('spawn', async () => {
-            new CommandHandler(this.bot, ops, new FarmHandler(this.bot, new MoveHandler(this.bot)))
+            let moveHandler = new MoveHandler(this.bot)
+            new CommandHandler(this.bot, ops, moveHandler, new FarmHandler(this.bot, moveHandler))
             new SnitchHandler(this.bot)
 
             console.log('Ready')
