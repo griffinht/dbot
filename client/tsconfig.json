@@ -1,15 +1,16 @@
 {
     "compilerOptions": {
       "outDir": "./build",
-      //"sourceMap": true,
-      "inlineSourceMap": true,
-      "inlineSources": true,
+/*      "sourceMap": true,
+      //"inlineSourceMap": true,
+      "inlineSources": true,*/
       "allowJs": false,
-      "target": "es2021",
+      "target": "es5",
       "module": "commonjs",
       "strict": true,
       "noImplicitReturns": true,
       "moduleResolution": "node",
+      //probably required for mineflayer commonjs
       "allowSyntheticDefaultImports": true
     },
     "include": ["./src/**/*"],

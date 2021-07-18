@@ -8,8 +8,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 RUN npm install
-# mineflayer has typescript errors with this configuration, so ignore them
-RUN npx tsc; exit 0
+RUN npx rollup -c
 
 
 #
