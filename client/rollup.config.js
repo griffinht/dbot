@@ -6,13 +6,16 @@ import commonjs from '@rollup/plugin-commonjs';
 export default {
     input: 'src/index.ts',
     output: {
-        dir: 'build',
+        file: 'build/index.js',
         format: 'cjs',
     },
     plugins: [
-        commonjs(),
         nodeResolve(),
+        commonjs(), // convert commonjs to es6 modules for rollup/plugin-typescript
+        typescript({
+            // rollup/plugin-typescript only works with es6 modules
+            module: "esnext"
+        }),
         terser(),
-        typescript(),
     ]
 };
