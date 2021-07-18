@@ -2,12 +2,11 @@ import {Bot, ControlState} from "mineflayer";
 import {mine} from "./miner.js";
 import {Vec3} from "vec3";
 import {strictParseInt, strictParseInts, toVec3} from "./util.js";
-import farm from "./farm.js";
-import MoveHandler from "./MoveHandler.js";
+import FarmHandler from "./FarmHandler.js";
 const data = require('minecraft-data')('1.16.5')
 
 export default class CommandHandler {
-    constructor(bot: Bot, ops: string[], moveHandler: MoveHandler) {
+    constructor(bot: Bot, ops: string[], farmHandler: FarmHandler) {
         bot.on('whisper', async (username: string, message: string) => {
             if (!ops.includes(username)) {
                 console.log(username + ': ' + message)
@@ -46,7 +45,12 @@ export default class CommandHandler {
                             }
                         }
                         bot.whisper(username, 'Farming ' + length + 'x' + width + ' area with ' + rows + ' rows starting at ' + start)
-                        farm(bot, data.itemsByName.wheat_seeds, moveHandler, start, length, width, rows, input)
+                        await farmHandler.farm(data.itemsByName.wheat_seeds, start, length, width, rows, input)
+                        bot.whisper(username, 'Farming complete')
+                        break
+                    case 'farmstop':
+                        bot.whisper(username, 'Stopping')
+                        farmHandler.stop()
                         break
                     case 'move':
                         let move = async (direction: ControlState, ticks: number) => {
