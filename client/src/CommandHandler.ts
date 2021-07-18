@@ -4,8 +4,8 @@ import {Vec3} from "vec3";
 import {strictParseInt, strictParseInts, toVec3} from "./util.js";
 import FarmHandler from "./FarmHandler.js";
 import MoveHandler from "./MoveHandler.js";
-import MinecraftData from "minecraft-data"
-//const MinecraftData = require('minecraft-data')
+//import MinecraftData from "minecraft-data"
+const MinecraftData = require('minecraft-data')
 const data = MinecraftData('1.16.5')
 
 

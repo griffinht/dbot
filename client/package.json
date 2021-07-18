@@ -11,10 +11,10 @@
   "license": "",
   "type": "commonjs",
   "dependencies": {
-    "mineflayer": "^3.7.0"
+    "mineflayer": "^3.7.0",
+    "minecraft-data": "^2.88.0"
   },
   "devDependencies": {
-    "minecraft-data": "^2.88.0",
     "vec3": "^0.1.7",
     "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-json": "^4.1.0",
