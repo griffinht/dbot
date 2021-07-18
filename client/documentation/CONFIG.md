@@ -1,6 +1,6 @@
-# Runtime flags
+# Config
 
-Runtime flags can be set via command line arguments or environment variables.
+Flags can be set via command line arguments or environment variables.
 
 #### Command line arguments
 

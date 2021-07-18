@@ -4,7 +4,7 @@ The bot can be commanded by whispering to it.
 
 `/tell bot command [arguments]`
 
-Only players on the ops list may command the bot. Others will be ignored. See [Runtime Flags](RUNTIME.md) to add a player to the ops list
+Only players on the ops list may command the bot. Others will be ignored. See [Config](CONFIG.md) to add a player to the ops list
 
 | command | description | example |
 | ------- | ----------- | ------- |
