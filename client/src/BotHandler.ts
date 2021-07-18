@@ -6,14 +6,10 @@ import SnitchHandler from "./SnitchHandler.js";
 
 const mineflayer = require('mineflayer')
 
-const ops = [
-    'Lem0nPickles',
-]
-
 export default class BotHandler {
     bot: Bot
 
-    constructor(botOptions: BotOptions) {
+    constructor(botOptions: BotOptions, ops: string[]) {
         console.log('Creating bot with username ' + botOptions.username)
         this.bot = mineflayer.createBot(botOptions)
         this.bot.on('error', console.log)
@@ -28,7 +24,7 @@ export default class BotHandler {
         this.bot.on('entityHurt', () => this.bot.chat('ouch'))
         this.bot.on('spawn', async () => {
             new CommandHandler(this.bot, ops, new FarmHandler(this.bot, new MoveHandler(this.bot)))
-            new SnitchHandler
+            new SnitchHandler(this.bot)
 
             console.log('Ready')
             for (let op in ops) {
