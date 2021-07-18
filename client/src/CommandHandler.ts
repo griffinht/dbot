@@ -91,7 +91,7 @@ export default class CommandHandler {
                         break
                     case 'look':
                         if (split.length !== 4) {
-                            bot.whisper(username, 'Incorrect arguments, try look 0 0 0')
+                            bot.whisper(username, 'Incorrect arguments, try look x y z')
                             return
                         }
 
