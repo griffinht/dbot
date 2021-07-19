@@ -27,6 +27,23 @@ export default class CommandHandler {
                         bot.whisper(username, 'mining')
                         mine(bot, new Vec3(0, 0, 0), new Vec3(0, 0, 0), new Vec3(1, 0, 0))
                         break
+                    case 'collect':
+                    {
+                        let start
+                        let length
+                        let width
+                        try {
+                            start = toVec3(strictParseInts(split, 1, 3))
+                            length = strictParseInt(split[4])
+                            width = strictParseInt(split[5])
+                        } catch (e) {
+                            bot.whisper(username, e.message + '. Usage: collect start (x y z) length width')
+                            break
+
+                        }
+                        farmHandler.collect(start, length, width)
+                        break
+                    }
                     case 'farm':
                         let usage = 'Usage: farm start (x y z) length width rows input (x y z)'
                         let start
@@ -49,7 +66,7 @@ export default class CommandHandler {
                             }
                         }
                         bot.whisper(username, 'Farming ' + length + 'x' + width + ' area with ' + rows + ' rows starting at ' + start)
-                        await farmHandler.farm(data.itemsByName.wheat_seeds, start, length, width, rows, input)
+                        //await farmHandler.farm(data.itemsByName.wheat_seeds, start, length, width, rows, input)
                         bot.whisper(username, 'Farming complete')
                         break
                     case 'farmstop':
@@ -100,7 +117,7 @@ export default class CommandHandler {
 
                         let target = toVec3(strictParseInts(split, 1, 3))
                         bot.whisper(username, 'Moving to ' + target)
-                        moveHandler.moveTo(bot, target, .5, .1)
+                        moveHandler.moveTo(target, .5, .1)
                     case 'look':
                         if (split.length !== 4) {
                             bot.whisper(username, 'Incorrect arguments, try look x y z')

@@ -58,7 +58,13 @@ export default class MoveHandler {
         })
     }
 
-    moveTo(bot: Bot, target: Vec3, far: number, close: number): Promise<void> {
+    async moveTos(waypoints: Vec3[], far: number, close: number) {
+        for (let waypoint of waypoints) {
+            await this.moveTo(waypoint, far, close)
+        }
+    }
+
+    async moveTo(target: Vec3, far: number, close: number) {
         return new Promise(async resolve => {
             let release = await this.mutex.acquire()
             if (this.move !== null) {
