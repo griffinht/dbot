@@ -98,12 +98,15 @@ export default class FarmHandler {
     async collect(start: Vec3, length: number, width: number) {
         let far = true
         await this.moveHandler.moveTo(start, FAR, CLOSE)
-        for (let i = 0; i < width / COLLECT_WIDTH; i++) {
+        let max = width / COLLECT_WIDTH
+        for (let i = 0; i < max; i++) {
             console.log(i, i * COLLECT_WIDTH, (far ? 1 : 0) * length)
             await this.moveHandler.moveTo(start.clone()
                 .add(new Vec3(i * COLLECT_WIDTH, 0, (far ? 1 : 0) * length)), FAR, CLOSE)
-            await this.moveHandler.moveTo(start.clone()
-                .add(new Vec3((i + 1) * COLLECT_WIDTH, 0, (far ? 1 : 0) * length)), FAR, CLOSE)
+            if (i !== max) {
+                await this.moveHandler.moveTo(start.clone()
+                    .add(new Vec3((i + 1) * COLLECT_WIDTH, 0, (far ? 1 : 0) * length)), FAR, CLOSE)
+            }
             far = !far
         }
     }
