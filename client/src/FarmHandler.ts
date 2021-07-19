@@ -100,7 +100,6 @@ export default class FarmHandler {
         await this.moveHandler.moveTo(start, FAR, CLOSE)
         let max = width / COLLECT_WIDTH
         for (let i = 0; i < max; i++) {
-            console.log(i, i * COLLECT_WIDTH, (far ? 1 : 0) * length)
             await this.moveHandler.moveTo(start.clone()
                 .add(new Vec3(i * COLLECT_WIDTH, 0, (far ? 1 : 0) * length)), FAR, CLOSE)
             if (i !== max) {
