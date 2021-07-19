@@ -39,6 +39,7 @@ export default class MoveHandler {
             }
             if (!this.bot.getControlState('forward')) {
                 await this.bot.setControlState('forward', true)
+                await this.bot.setControlState('sprint', true)
             }
             this.bot.lookAt(this.move.target)
             let distance = this.bot.entity.position.xzDistanceTo(this.move.target)
@@ -50,18 +51,13 @@ export default class MoveHandler {
             } else {
                 if (distance < this.move.close
                     || distance > this.move.far) {
+                    await this.bot.setControlState('sprint', false)
                     await this.bot.setControlState('forward', false)
                     this.move = null
                 }
             }
             release()
         })
-    }
-
-    async moveTos(waypoints: Vec3[], far: number, close: number) {
-        for (let waypoint of waypoints) {
-            await this.moveTo(waypoint, far, close)
-        }
     }
 
     async moveTo(target: Vec3, far: number, close: number) {
