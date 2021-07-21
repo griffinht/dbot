@@ -10,9 +10,6 @@ WORKDIR /usr/src/app
 # Paper will download and patch the server binaries, then automatically quit because the eula is not agreed to
 RUN curl -o server.jar "https://papermc.io/api/v1/paper/1.16.5/latest/download"
 RUN java -jar server.jar; exit 0
-# Dirty workaround for plugins that can't be downloaded via scripts
-# Everything in bin will be copied to the build
-COPY bin .
 
 #
 # Run
