@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
       "outDir": "./build",
-/*      "sourceMap": true,
+      "sourceMap": true,
       //"inlineSourceMap": true,
-      "inlineSources": true,*/
+      "inlineSources": true,
       "allowJs": false,
       "target": "esnext",
       // mineflayer uses commonjs

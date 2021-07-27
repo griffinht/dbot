@@ -1,6 +1,7 @@
 import {BotOptions} from 'mineflayer'
-import BotHandler from "./BotHandler.js";
-import Environment from "./Environment.js";
+import BotHandler from './handler/BotHandler.js'
+import Environment from './Environment.js'
+import './console.js'
 
 const environment = new Environment(process.argv.slice(2))
 

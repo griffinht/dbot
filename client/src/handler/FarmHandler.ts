@@ -1,7 +1,7 @@
 import {Vec3} from "vec3";
 import {Bot} from "mineflayer";
 import {Item} from "minecraft-data";
-import {getBlock} from "./util.js";
+import {getBlock} from "../util.js";
 import MoveHandler from "./MoveHandler.js";
 
 // maximum amount to withdraw each refill

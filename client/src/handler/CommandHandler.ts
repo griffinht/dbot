@@ -1,7 +1,7 @@
 import {Bot, ControlState} from "mineflayer";
-import {mine} from "./miner.js";
+import {mine} from "../miner.js";
 import {Vec3} from "vec3";
-import {strictParseInt, strictParseInts, toVec3} from "./util.js";
+import {strictParseInt, strictParseInts, toVec3} from "../util.js";
 import FarmHandler from "./FarmHandler.js";
 import MoveHandler from "./MoveHandler.js";
 //import MinecraftData from "minecraft-data"
