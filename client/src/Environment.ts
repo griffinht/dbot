@@ -1,6 +1,7 @@
 export default class Environment {
     host: string = 'localhost'
     port: number = 25565
+    viewerPort: number = 30000
     username: string = 'bot'
     password: string = ''
     ops: string[] = []
@@ -25,6 +26,12 @@ export default class Environment {
                     break
                 case 'port':
                     this.port = parseInt(value)
+                    if (isNaN(this.port)) {
+                        throw new Error(value + ' is not a number')
+                    }
+                    break
+                case 'viewerport':
+                    this.viewerPort = parseInt(value)
                     if (isNaN(this.port)) {
                         throw new Error(value + ' is not a number')
                     }
