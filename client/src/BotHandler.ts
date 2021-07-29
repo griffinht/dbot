@@ -17,7 +17,7 @@ export default class BotHandler {
         console.log('Creating bot with username ' + botOptions.username)
         this.bot = createBot(botOptions)
         this.bot.on('error', (e) => {
-            console.log('heleodfisdfoijsdf')
+            console.log('Logging error:')
             console.log(e)
         })
 
@@ -27,8 +27,6 @@ export default class BotHandler {
         this.bot.on('entityHurt', () => console.log('entityHurt'))
         this.bot.on('death', () => console.log('death'))
 
-        this.bot.on('death', () => this.bot.chat('ahhhhhh'))
-        this.bot.on('entityHurt', () => this.bot.chat('ouch'))
         this.bot.on('spawn', async () => {
             let moveHandler = new MoveHandler(this.bot)
             new CommandHandler(this.bot, environment.ops, moveHandler, new FarmHandler(this.bot, moveHandler))
@@ -36,9 +34,6 @@ export default class BotHandler {
             //new ViewerHandler(environment.viewerPort, this.bot, moveHandler)
 
             console.log('Ready')
-            for (let op in environment.ops) {
-                this.bot.whisper(op, 'ready')
-            }
         })
     }
 }

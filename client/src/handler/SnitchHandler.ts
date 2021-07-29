@@ -1,6 +1,5 @@
 import {Bot, ChatMessage} from "mineflayer";
-
-// §6Enter  §aPlayer  §bLogsnitch  §e[0 0 0]  §a[8m §cSouth West§a]
+import {Vec3} from "vec3";
 
 export default class SnitchHandler {
     bot: Bot
@@ -10,12 +9,31 @@ export default class SnitchHandler {
 
         // 'chat' | 'system' | 'game_info'
         this.bot.on('message', (jsonMsg: ChatMessage, position: string) => {
-            console.log(position)
-            if (position !== 'system') {
-                return
+            switch (position) {
+                case 'system':
+                    let message = jsonMsg.toString() // remove color codes, combine
+                        .replace(/\s+/g,' ') // remove extra spaces
+                    let split = message.split(' ')
+                    console.log(message)
+                    switch (split[0]) {
+                        case 'Enter':
+                        case 'Login':
+                        case 'Logout':
+                            snitch(split[0], split[1], new Vec3(parseInt(split[3].slice(1)), parseInt(split[4]), parseInt(split[5].slice())))
+                            break
+                        default:
+                            console.log('unknown')
+                    }
+                    break
+                default:
+                    console.log('unknown position ' + position)
             }
-
-            console.log(jsonMsg)
         })
     }
+}
+
+type SnitchAction = 'Enter' | 'Login' | 'Logout'
+
+function snitch(action: SnitchAction, username: string, position: Vec3) {
+    console.log(action + ' by ' + username + ' at ' + position)
 }
