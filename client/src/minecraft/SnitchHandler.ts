@@ -1,14 +1,15 @@
 import {Bot, ChatMessage} from "mineflayer";
 import {Vec3} from "vec3";
+import Dbot from "../discord/dbot";
+import {Snowflake} from "discord.js";
+
+export type SnitchAction = 'Enter' | 'Login' | 'Logout'
 
 export default class SnitchHandler {
-    bot: Bot
-
-    constructor(bot: Bot) {
-        this.bot = bot
+    constructor(bot: Bot, snitch: (username: string, action: SnitchAction, location: Vec3) => void) {
 
         // 'chat' | 'system' | 'game_info'
-        this.bot.on('message', (jsonMsg: ChatMessage, position: string) => {
+        bot.on('message', (jsonMsg: ChatMessage, position: string) => {
             switch (position) {
                 case 'system':
                     let message = jsonMsg.toString() // remove color codes, combine
@@ -19,7 +20,7 @@ export default class SnitchHandler {
                         case 'Enter':
                         case 'Login':
                         case 'Logout':
-                            snitch(split[0], split[1], new Vec3(parseInt(split[3].slice(1)), parseInt(split[4]), parseInt(split[5].slice())))
+                            snitch(split[1], split[0], new Vec3(parseInt(split[3].slice(1)), parseInt(split[4]), parseInt(split[5].slice())))
                             break
                         default:
                             console.log('unknown')
@@ -32,8 +33,3 @@ export default class SnitchHandler {
     }
 }
 
-type SnitchAction = 'Enter' | 'Login' | 'Logout'
-
-function snitch(action: SnitchAction, username: string, position: Vec3) {
-    console.log(action + ' by ' + username + ' at ' + position)
-}

@@ -2,9 +2,11 @@ import {Bot, BotOptions} from "mineflayer";
 import CommandHandler from "./handler/CommandHandler.js";
 import MoveHandler from "./handler/MoveHandler.js";
 import FarmHandler from "./handler/FarmHandler.js";
-import SnitchHandler from "./handler/SnitchHandler.js";
+import SnitchHandler, {SnitchAction} from "./SnitchHandler.js";
 import ViewerHandler from "./handler/ViewerHandler";
 import Environment from "./Environment";
+import Dbot from "../discord/dbot";
+import {Vec3} from "vec3";
 
 // static es6 import breaks things :(
 const createBot = require('mineflayer').createBot
@@ -13,7 +15,7 @@ const createBot = require('mineflayer').createBot
 export default class BotHandler {
     bot: Bot
 
-    constructor(botOptions: BotOptions, environment: Environment) {
+    constructor(botOptions: BotOptions, environment: Environment, snitch?: (username: string, action: SnitchAction, location: Vec3) => void) {
         console.log('Creating bot with username ' + botOptions.username)
         this.bot = createBot(botOptions)
         this.bot.on('error', (e) => {
@@ -30,7 +32,9 @@ export default class BotHandler {
         this.bot.on('spawn', async () => {
             let moveHandler = new MoveHandler(this.bot)
             new CommandHandler(this.bot, environment.ops, moveHandler, new FarmHandler(this.bot, moveHandler))
-            new SnitchHandler(this.bot)
+
+            if (snitch === undefined) snitch = (username: string, action: SnitchAction, location: Vec3) => console.log(username + ' ' + action + ' ' + location)
+            new SnitchHandler(this.bot, snitch)
             //new ViewerHandler(environment.viewerPort, this.bot, moveHandler)
 
             console.log('Ready')

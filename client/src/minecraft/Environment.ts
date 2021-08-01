@@ -3,7 +3,7 @@ export default class Environment {
     port: number = 25565
     viewerPort: number = 30000
     username: string = 'bot'
-    password: string = ''
+    password?: string
     ops: string[] = []
     token?: string
 
@@ -45,6 +45,7 @@ export default class Environment {
                     break
                 case 'token':
                     this.token = value
+                    break
                 case 'ops':
                     this.ops = value.split(',')
                     break
