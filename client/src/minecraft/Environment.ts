@@ -5,6 +5,7 @@ export default class Environment {
     username: string = 'bot'
     password: string = ''
     ops: string[] = []
+    token?: string
 
     constructor(args: string[]) {
         for (let arg of args) {
@@ -42,6 +43,8 @@ export default class Environment {
                 case 'password':
                     this.password = value
                     break
+                case 'token':
+                    this.token = value
                 case 'ops':
                     this.ops = value.split(',')
                     break
