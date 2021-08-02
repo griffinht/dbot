@@ -5,7 +5,6 @@ import FarmHandler from "./handler/FarmHandler.js";
 import SnitchHandler, {SnitchAction} from "./SnitchHandler.js";
 import ViewerHandler from "./handler/ViewerHandler";
 import Environment from "./Environment";
-import Dbot from "../discord/dbot";
 import {Vec3} from "vec3";
 
 // static es6 import breaks things :(

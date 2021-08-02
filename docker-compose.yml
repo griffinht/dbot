@@ -14,3 +14,7 @@ services:
         image: stzups/client
         build:
             context: client
+    discord:
+        image: stzups/discord
+        build:
+            context: discord
